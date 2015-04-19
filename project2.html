@@ -1,18 +1,41 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
+<!-- Derek Klatt and Sean Obyrne -->
 <html>
 <head>
+<style>
+.button {
+  position:absolute;
+  visibility: hidden;
+  top: 256;
+  left: 256;
+}
+.time {
+top: 0px;
+position: absolute;
+}
+.score {
+position: absolute;
+top: 30px;
+}
+</style>
 <script id="vertex-shader" type="x-shader/x-vertex">
 attribute vec4 vPosition;
+attribute float a_PointSize;
+attribute vec4 vColor;
+varying vec4 fColor;
 void main()
 {
 gl_Position = vPosition;
+fColor = vColor;
+gl_PointSize = a_PointSize;
 }
 </script>
 <script id="fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
+varying vec4 fColor;
 void main()
 {
-gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 );
+gl_FragColor = fColor;
 }
 </script>
 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
@@ -24,5 +47,8 @@ gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 );
 <canvas id="gl-canvas" width="512" height="512">
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
+<button id="newGame" class="button" onclick="restart()">New Game</button> 
+<div id="timer" class="time"><p>Time: 0</p></div>
+<div id="score" class="score"><p>High Score: 0</p><div>
 </body>
 </html>

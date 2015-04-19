@@ -73,9 +73,9 @@ main()
 
     gl_Position = projectionMatrix * modelViewMatrix * vPosition;
     
-    //fColor = ambient + diffuse +specular;
-		fColor = vColor;
-    //fColor.a = 1.0;
+    fColor = ambient + diffuse + specular + vColor;
+		//fColor = vColor;
+    fColor.a = 1.0;
 }
 </script>
 <script id="fragment-shader" type="x-shader/x-fragment">

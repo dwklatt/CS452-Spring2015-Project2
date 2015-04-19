@@ -112,6 +112,9 @@ window.onload = function init()
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
+		document.onkeydown = keypressed;
+		document.onkeyup = kup;
+
     gl.viewport( 0, 0, canvas.width, canvas.height );
     
     gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
@@ -192,8 +195,20 @@ window.onload = function init()
 }
 
 function render()
-{
-			//left
+{	
+		//updateObjects();
+		if (hasLost()) { newGame(); }
+		
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+    var eye = vec3( radius*Math.sin(theta)*Math.cos(phi), 
+                    radius*Math.cos(theta)*Math.sin(phi),
+                    radius*Math.cos(theta));
+    
+    modelViewMatrix = lookAt( eye, at, up );
+    projectionMatrix = ortho( left, right, bottom, ytop, near, far );
+
+		//left
 		if(on[0] == 1){
 		}
 		//up
@@ -210,18 +225,6 @@ function render()
 		if(on[4] == 1){
 			//put jump here
 		}
-		
-		updateObjects();
-		if (hasLost()) { newGame(); }
-		
-    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    
-    var eye = vec3( radius*Math.sin(theta)*Math.cos(phi), 
-                    radius*Math.cos(theta)*Math.sin(phi),
-                    radius*Math.cos(theta));
-    
-    modelViewMatrix = lookAt( eye, at, up );
-    projectionMatrix = ortho( left, right, bottom, ytop, near, far );
     
     gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );

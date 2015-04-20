@@ -1,7 +1,7 @@
 //Derek Klatt and Sean Obyrne
 var canvas;
 var gl;
-var numCubes = 6;
+var numCubes = 8;
 var currentCubes = 1;
 
 //var numVertices  = 36*numCubes;
@@ -118,7 +118,7 @@ function configureTexture() {
 
 function quad(a, b, c, d) {
 
-	    var t1 = subtract(positionArray[b], positionArray[a]);
+	  var t1 = subtract(positionArray[b], positionArray[a]);
 		var t2 = subtract(positionArray[c], positionArray[b]);
 		var normal = cross(t1, t2);
 		var normal = vec3(normal);
@@ -163,7 +163,7 @@ var translation = [
         vec4( 0, 0, 0.5, -0.5 ),
         vec4( 0,  0, -0.5, -0.5 ),
         vec4( 0,  0, 0, -0.5 ),
-        vec4( 0.1, -0.1, -0.1, 1.0 )
+        vec4( 1.0, -1.0, -1.0, 1.0 )
     ];
 
 var vertices = [
@@ -212,13 +212,14 @@ var vTexCoord ;
 var cBuffer;
 var vColor;
 
-function god(){
+function god(x,y,z){
 	currentCubes ++;
 	if(currentCubes > numCubes){
 			currentCubes = numCubes;
 			//return;
 	}
-	//render();
+  translation[currentCubes] = vec4(x,y,z,1.0);
+	toRender();
 }
 
 function devil(){
@@ -242,63 +243,80 @@ window.onload = function init() {
   program = initShaders( gl, "vertex-shader", "fragment-shader" );
   gl.useProgram( program );
 
+	
+
+  document.getElementById("ButtonX").onclick = function(){prevAxis = axis; axis = xAxis;};
+  document.getElementById("ButtonY").onclick = function(){prevAxis = axis; axis = yAxis;};
+  document.getElementById("ButtonZ").onclick = function(){prevAxis = axis; axis = zAxis;};
+  document.getElementById("ButtonT").onclick = function(){
+    x = parseFloat(document.getElementById("x").value);
+    y = parseFloat(document.getElementById("y").value);
+    z = parseFloat(document.getElementById("z").value);
+    console.log(x,y,z);
+    god(x,y,z);
+  };
+	document.getElementById("ButtonU").onclick = function(){devil();};
+	document.getElementById("ZoomIn").onclick = function(){if(p > 1) {p = p / 1.25;}}
+	document.getElementById("ZoomOut").onclick = function(){p = p * 1.25;}
+	document.getElementById("Default").onclick = function(){p = 2;}
+
+	  
+	toRender();
+	render();	
+
+	//god();
+}
+
+var toRender = function() {
 	makeCubes();
-    //addCube();
-    colorCube();
+  //addCube();
+  colorCube();
 
-    nBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW );
-    
-    vNormal = gl.getAttribLocation( program, "vNormal" );
-    gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vNormal );
+  nBuffer = gl.createBuffer();
+  gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer );
+  gl.bufferData( gl.ARRAY_BUFFER, flatten(normalsArray), gl.STATIC_DRAW );
+  
+  vNormal = gl.getAttribLocation( program, "vNormal" );
+  gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( vNormal );
 
-    vBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW );
-    
-    vPosition = gl.getAttribLocation(program, "vPosition");
-    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vPosition);
-	
-		//uncomment these lines for a multi color object!
-	
-	// cBuffer = gl.createBuffer();
-    // gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-    // gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
-    
-    // vColor = gl.getAttribLocation( program, "vColor" );
-    // gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
-    // gl.enableVertexAttribArray( vColor );
-	
-	  tBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, tBuffer);
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(texCoordsArray), gl.STATIC_DRAW );
-    
-    vTexCoord = gl.getAttribLocation( program, "vTexCoord" );
-    gl.vertexAttribPointer( vTexCoord, 2, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vTexCoord );
-	
-    
-    viewerPos = vec3(0.0, 0.0, -20.0 );
+  vBuffer = gl.createBuffer();
+  gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
+  gl.bufferData( gl.ARRAY_BUFFER, flatten(pointsArray), gl.STATIC_DRAW );
+  
+  vPosition = gl.getAttribLocation(program, "vPosition");
+  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vPosition);
 
-    //projection = ortho(-p, p, -p, p, -100, 100);
-    
-    ambientProduct = mult(lightAmbient, materialAmbient);
-    diffuseProduct = mult(lightDiffuse, materialDiffuse);
-    specularProduct = mult(lightSpecular, materialSpecular);
+	//uncomment these lines for a multi color object!
 
-    document.getElementById("ButtonX").onclick = function(){prevAxis = axis; axis = xAxis;};
-    document.getElementById("ButtonY").onclick = function(){prevAxis = axis; axis = yAxis;};
-    document.getElementById("ButtonZ").onclick = function(){prevAxis = axis; axis = zAxis;};
-    document.getElementById("ButtonT").onclick = function(){god();};
-		document.getElementById("ButtonU").onclick = function(){devil();};
-		document.getElementById("ZoomIn").onclick = function(){if(p > 1) {p = p / 1.25;}}
-		document.getElementById("ZoomOut").onclick = function(){p = p * 1.25;}
-		document.getElementById("Default").onclick = function(){p = 2;}
+// cBuffer = gl.createBuffer();
+  // gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
+  // gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
+  
+  // vColor = gl.getAttribLocation( program, "vColor" );
+  // gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
+  // gl.enableVertexAttribArray( vColor );
 
-	  thetaLoc = gl.getUniformLocation(program, "theta");
+  tBuffer = gl.createBuffer();
+  gl.bindBuffer( gl.ARRAY_BUFFER, tBuffer);
+  gl.bufferData( gl.ARRAY_BUFFER, flatten(texCoordsArray), gl.STATIC_DRAW );
+  
+  vTexCoord = gl.getAttribLocation( program, "vTexCoord" );
+  gl.vertexAttribPointer( vTexCoord, 2, gl.FLOAT, false, 0, 0 );
+  gl.enableVertexAttribArray( vTexCoord );
+
+  
+  viewerPos = vec3(0.0, 0.0, -20.0 );
+
+  //projection = ortho(-p, p, -p, p, -100, 100);
+  
+  ambientProduct = mult(lightAmbient, materialAmbient);
+  diffuseProduct = mult(lightDiffuse, materialDiffuse);
+  specularProduct = mult(lightSpecular, materialSpecular);
+
+
+	thetaLoc = gl.getUniformLocation(program, "theta");
 
 	gl.uniform4fv(gl.getUniformLocation(program, "ambientProduct"),
 	   flatten(ambientProduct));
@@ -323,19 +341,16 @@ window.onload = function init() {
 	gl.activeTexture( gl.TEXTURE1 );
 	gl.bindTexture( gl.TEXTURE_2D, texture2 );
 	gl.uniform1i(gl.getUniformLocation( program, "Tex1"), 1);
-	
-	render();	
-
-	//god();
 }
+
 var rotation = 1;
 var render = function(){
             
-    projection = ortho(-p, p, -p, p, -100, 100);
-	  gl.uniformMatrix4fv( gl.getUniformLocation(program, "projectionMatrix"), false, flatten(projection));
+  projection = ortho(-p, p, -p, p, -100, 100);
+	gl.uniformMatrix4fv( gl.getUniformLocation(program, "projectionMatrix"), false, flatten(projection));
 
-    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    if(prevAxis == axis){
+  gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  if(prevAxis == axis){
 		rotation = rotation * -1;
 		prevAxis = -1;
 	}
@@ -343,16 +358,16 @@ var render = function(){
 	theta[axis] += rotation*2.0;
     
 	
-    modelView = mat4();
-    modelView = mult(modelView, rotate(theta[xAxis], [1, 0, 0] ));
-    modelView = mult(modelView, rotate(theta[yAxis], [0, 1, 0] ));
-    modelView = mult(modelView, rotate(theta[zAxis], [0, 0, 1] ));
-    
-    gl.uniformMatrix4fv( gl.getUniformLocation(program,
-            "modelViewMatrix"), false, flatten(modelView) );
+  modelView = mat4();
+  modelView = mult(modelView, rotate(theta[xAxis], [1, 0, 0] ));
+  modelView = mult(modelView, rotate(theta[yAxis], [0, 1, 0] ));
+  modelView = mult(modelView, rotate(theta[zAxis], [0, 0, 1] ));
+  
+  gl.uniformMatrix4fv( gl.getUniformLocation(program,
+          "modelViewMatrix"), false, flatten(modelView) );
 
-    gl.drawArrays( gl.TRIANGLES, 0, 36*currentCubes );
-            
-            
-    requestAnimFrame(render);
+  gl.drawArrays( gl.TRIANGLES, 0, 36*currentCubes );
+          
+          
+  requestAnimFrame(render);
 }

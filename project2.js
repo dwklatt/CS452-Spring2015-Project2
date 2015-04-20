@@ -1,5 +1,6 @@
 //Derek Klatt and Sean Obyrne
 var gl;
+var program;
 
 var lightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
@@ -20,40 +21,40 @@ var nColumns = 50;
 
 var pointsArray = [
 // Front face
-	-0.25, -0.25,  0.25,
-	0.25, -0.25,  0.25,
-	0.25,  0.25,  0.25,
-	-0.25,  0.25,  0.25,
+	-0.25, -1.5,  0.25,
+	0.25, -1.5,  0.25,
+	0.25,  -1.0,  0.25,
+	-0.25,  -1.0,  0.25,
 
 	// Back face
-	-0.25, -0.25, -0.25,
-	-0.25,  0.25, -0.25,
-	0.25,  0.25, -0.25,
-	0.25, -0.25, -0.25,
+	-0.25, -1.5, -0.25,
+	-0.25,  -1.0, -0.25,
+	0.25,  -1.0, -0.25,
+	0.25, -1.5, -0.25,
 
 	// Top face
-	-0.25,  0.25, -0.25,
-	-0.25,  0.25,  0.25,
-	0.25,  0.25,  0.25,
-	0.25,  0.25, -0.25,
+	-0.25,  -1.0, -0.25,
+	-0.25,  -1.0,  0.25,
+	0.25,  -1.0,  0.25,
+	0.25,  -1.0, -0.25,
 
 	// Bottom face
-	-0.25, -0.25, -0.25,
-	0.25, -0.25, -0.25,
-	0.25, -0.25,  0.25,
-	-0.25, -0.25,  0.25,
+	-0.25, -1.5, -0.25,
+	0.25, -1.5, -0.25,
+	0.25, -1.5,  0.25,
+	-0.25, -1.5,  0.25,
 
 	// Right face
-	0.25, -0.25, -0.25,
-	0.25,  0.25, -0.25,
-	0.25,  0.25,  0.25,
-	0.25, -0.25,  0.25,
+	0.25, -1.5, -0.25,
+	0.25,  -1.0, -0.25,
+	0.25,  -1.0,  0.25,
+	0.25, -1.5,  0.25,
 
 	// Left face
-	-0.25, -0.25, -0.25,
-	-0.25, -0.25,  0.25,
-	-0.25,  0.25,  0.25,
-	-0.25,  0.25, -0.25
+	-0.25, -1.5, -0.25,
+	-0.25, -1.5,  0.25,
+	-0.25,  -1.0,  0.25,
+	-0.25,  -1.0, -0.25
 ];
 
 var cubeIndices = [
@@ -132,12 +133,40 @@ window.onload = function init()
     //
     //  Load shaders and initialize attribute buffers
     //
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
     
     ambientProduct = mult(lightAmbient, materialAmbient);
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
     specularProduct = mult(lightSpecular, materialSpecular);
+
+    render_interval = setInterval(toRender, 10);
+}
+
+function toRender() {
+		//left
+		if(on[0] == 1){
+			for(var i = 0; i < pointsArray.length; i = i +3){
+				pointsArray[i] -= 0.02;
+			}
+		}
+		//up
+		if(on[1] == 1){
+			//put jump here?
+		}
+		//right
+		if(on[2] == 1){
+			for(var i = 0; i < pointsArray.length; i = i +3){
+				pointsArray[i] += 0.02;
+			}
+		}
+		//down
+		if(on[3] == 1){
+		}
+		//space
+		if(on[4] == 1){
+			//put jump here
+		}
 
     var vBufferId = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBufferId );
@@ -190,8 +219,7 @@ window.onload = function init()
        "lightPosition"),flatten(lightPosition) );
     gl.uniform1f( gl.getUniformLocation(program, 
        "shininess"),materialShininess );
-
-    render_interval = setInterval(render, 10);
+    render();
 }
 
 function render()
@@ -207,24 +235,6 @@ function render()
     
     modelViewMatrix = lookAt( eye, at, up );
     projectionMatrix = ortho( left, right, bottom, ytop, near, far );
-
-		//left
-		if(on[0] == 1){
-		}
-		//up
-		if(on[1] == 1){
-			//put jump here?
-		}
-		//right
-		if(on[2] == 1){
-		}
-		//down
-		if(on[3] == 1){
-		}
-		//space
-		if(on[4] == 1){
-			//put jump here
-		}
     
     gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );

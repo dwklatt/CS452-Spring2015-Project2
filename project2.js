@@ -66,7 +66,7 @@ var image2 = new Uint8Array(4*texSize*texSize);
 	
 
 
-var lightPosition = vec4(-2.0, 0, 0.5, 1.0 );
+var lightPosition = vec4(-1.0, 0, 1.0, 1.0 );
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
 var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
 var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
@@ -86,6 +86,7 @@ var xAxis = 0;
 var yAxis = 1;
 var zAxis = 2;
 var axis = 0;
+var prevAxis = 0;
 var theta =[0, 0, 0];
 
 var thetaLoc;
@@ -114,7 +115,7 @@ function configureTexture() {
 
 function quad(a, b, c, d) {
 
-		var t1 = subtract(positionArray[b], positionArray[a]);
+	    var t1 = subtract(positionArray[b], positionArray[a]);
 		var t2 = subtract(positionArray[c], positionArray[b]);
 		var normal = cross(t1, t2);
 		var normal = vec3(normal);
@@ -217,9 +218,10 @@ function god(){
 }
 
 function devil(){
-	currentCubes--;
+	currentCubes --;
 	if(currentCubes < 0){
-		currentCubes = 0;
+			currentCubes = 0;
+			//return;
 	}
 }
 
@@ -240,7 +242,7 @@ window.onload = function init() {
     program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-		makeCubes();
+	makeCubes();
     //addCube();
     colorCube();
 
@@ -262,15 +264,15 @@ window.onload = function init() {
 	
 		//uncomment these lines for a multi color object!
 	
-		//cBuffer = gl.createBuffer();
-    //gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-    //gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
+	// cBuffer = gl.createBuffer();
+    // gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
+    // gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
     
-    //vColor = gl.getAttribLocation( program, "vColor" );
-    //gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
-    //`gl.enableVertexAttribArray( vColor );
-
-		tBuffer = gl.createBuffer();
+    // vColor = gl.getAttribLocation( program, "vColor" );
+    // gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
+    // gl.enableVertexAttribArray( vColor );
+	
+	tBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, tBuffer);
     gl.bufferData( gl.ARRAY_BUFFER, flatten(texCoordsArray), gl.STATIC_DRAW );
     
@@ -287,14 +289,14 @@ window.onload = function init() {
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
     specularProduct = mult(lightSpecular, materialSpecular);
 
-    document.getElementById("ButtonX").onclick = function(){axis = xAxis;};
-    document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
-    document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
+    document.getElementById("ButtonX").onclick = function(){prevAxis = axis; axis = xAxis;};
+    document.getElementById("ButtonY").onclick = function(){prevAxis = axis; axis = yAxis;};
+    document.getElementById("ButtonZ").onclick = function(){prevAxis = axis; axis = zAxis;};
     document.getElementById("ButtonT").onclick = function(){god();};
-		document.getElementById("ButtonU").onclick = function(){devil();};
+	document.getElementById("ButtonU").onclick = function(){devil();};
 
-
-	  thetaLoc = gl.getUniformLocation(program, "theta");
+	
+	    thetaLoc = gl.getUniformLocation(program, "theta");
 
 	gl.uniform4fv(gl.getUniformLocation(program, "ambientProduct"),
 	   flatten(ambientProduct));
@@ -325,13 +327,18 @@ window.onload = function init() {
 
 	//god();
 }
-
+var rotation = 1;
 var render = function(){
             
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            
-    if(flag) theta[axis] += 2.0;
-            
+    if(prevAxis == axis){
+		rotation = rotation * -1;
+		prevAxis = -1;
+	}
+	
+	theta[axis] += rotation*2.0;
+    
+	
     modelView = mat4();
     modelView = mult(modelView, rotate(theta[xAxis], [1, 0, 0] ));
     modelView = mult(modelView, rotate(theta[yAxis], [0, 1, 0] ));

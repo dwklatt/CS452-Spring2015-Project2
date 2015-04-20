@@ -66,7 +66,7 @@ var image2 = new Uint8Array(4*texSize*texSize);
 	
 
 
-var lightPosition = vec4(-2.0, 0, 0.0, 1.0 );
+var lightPosition = vec4(-2.0, 0, 0.5, 1.0 );
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
 var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
 var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
@@ -114,7 +114,7 @@ function configureTexture() {
 
 function quad(a, b, c, d) {
 
-	    var t1 = subtract(positionArray[b], positionArray[a]);
+		var t1 = subtract(positionArray[b], positionArray[a]);
 		var t2 = subtract(positionArray[c], positionArray[b]);
 		var normal = cross(t1, t2);
 		var normal = vec3(normal);
@@ -204,6 +204,8 @@ var vBuffer;
 var vPosition;
 var tBuffer;
 var vTexCoord ;
+var cBuffer;
+var vColor;
 
 function god(){
 	currentCubes ++;
@@ -260,15 +262,15 @@ window.onload = function init() {
 	
 		//uncomment these lines for a multi color object!
 	
-	// var cBuffer = gl.createBuffer();
-    // gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-    // gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
+		//cBuffer = gl.createBuffer();
+    //gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
+    //gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
     
-    // var vColor = gl.getAttribLocation( program, "vColor" );
-    // gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
-    // gl.enableVertexAttribArray( vColor );
-	
-	tBuffer = gl.createBuffer();
+    //vColor = gl.getAttribLocation( program, "vColor" );
+    //gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
+    //`gl.enableVertexAttribArray( vColor );
+
+		tBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, tBuffer);
     gl.bufferData( gl.ARRAY_BUFFER, flatten(texCoordsArray), gl.STATIC_DRAW );
     

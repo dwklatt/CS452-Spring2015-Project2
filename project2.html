@@ -1,69 +1,51 @@
 <!DOCTYPE HTML>
 <!-- Derek Klatt and Sean Obyrne -->
 <html>
-<head>
-<style>
-.button {
-  position:absolute;
-  visibility: hidden;
-  top: 256;
-  left: 256;
-}
-.time {
-top: 0px;
-position: absolute;
-}
-.score {
-position: absolute;
-top: 30px;
-}
-</style>
+
+<button id = "ButtonX">Rotate X</button>
+<button id = "ButtonY">Rotate Y</button>
+<button id = "ButtonZ">Rotate Z</button>
+<button id = "ButtonT">Create</button>
+<button id = "ButtonU">Destroy</button>
+<button id = "ZoomIn">Zoom In</button>
+<button id = "ZoomOut">Zoom Out</button>
+<button id = "Default">Default</button>
+
+
 <script id="vertex-shader" type="x-shader/x-vertex">
-attribute vec4 vPosition;
-attribute vec4 vNormal;
-attribute vec4 vColor;
-
+attribute  vec4 vPosition;
+attribute  vec3 vNormal;
 varying vec4 fColor;
-
+attribute vec4 vColor;
+attribute  vec2 vTexCoord;
+varying vec2 fTexCoord;
 uniform vec4 ambientProduct, diffuseProduct, specularProduct;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec4 lightPosition;
 uniform float shininess;
-uniform mat3 normalMatrix;
 
-void
-main()
+void main()
 {
-    vec3 pos = (modelViewMatrix * vPosition).xyz;
     
-    vec3 L;
+    vec3 pos = -(modelViewMatrix * vPosition).xyz;
     
-    // check for directional light
+    //fixed light postion
     
-    if(lightPosition.w == 0.0) L = normalize(lightPosition.xyz);
-    else L = normalize( lightPosition.xyz - pos );
-
-    // Because the eye point the is at the orgin
-    // the vector from the vertex position to the eye is
-    	
-    vec3 E = -normalize( pos );
-    
-    // halfway vector
-    
+    vec3 light = lightPosition.xyz;
+    vec3 L = normalize( light - pos );
+	
+    vec3 E = normalize( -pos );
     vec3 H = normalize( L + E );
-
-    // Transform vertex normal into eye coordinates
     
-    vec3 N = normalize( normalMatrix*vNormal.xyz);
-
-
+    vec4 NN = vec4(vNormal,0);
+    // Transform vertex normal into eye coordinates
+       
+    vec3 N = normalize( (modelViewMatrix*NN).xyz);
     // Compute terms in the illumination equation
     vec4 ambient = ambientProduct;
-
     float Kd = max( dot(L, N), 0.0 );
     vec4  diffuse = Kd*diffuseProduct;
-
     float Ks = pow( max(dot(N, H), 0.0), shininess );
     vec4  specular = Ks * specularProduct;
     
@@ -74,29 +56,34 @@ main()
     gl_Position = projectionMatrix * modelViewMatrix * vPosition;
     
     fColor = ambient + diffuse + specular + vColor;
-		//fColor = vColor;
+    	   
+
+    fTexCoord = vTexCoord;
     fColor.a = 1.0;
 }
 </script>
+
 <script id="fragment-shader" type="x-shader/x-fragment">
 precision mediump float;
 varying vec4 fColor;
-void main()
+varying  vec2 fTexCoord;
+uniform sampler2D Tex0;
+uniform sampler2D Tex1;
+void
+main()
 {
-gl_FragColor = fColor;
+    gl_FragColor = fColor*(texture2D(Tex0, fTexCoord)*texture2D(Tex1, fTexCoord));
 }
 </script>
+
 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
 <script type="text/javascript" src="../Common/initShaders.js"></script>
 <script type="text/javascript" src="../Common/MV.js"></script>
 <script type="text/javascript" src="project2.js"></script>
-</head>
+
 <body>
 <canvas id="gl-canvas" width="512" height="512">
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
-<button id="newGame" class="button" onclick="restart()">New Game</button> 
-<div id="timer" class="time"><p>Time: 0</p></div>
-<div id="score" class="score"><p>High Score: 0</p><div>
 </body>
 </html>

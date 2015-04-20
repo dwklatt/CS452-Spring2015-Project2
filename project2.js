@@ -1,21 +1,76 @@
-
-
 var canvas;
 var gl;
-var numCubes = 2;
+var numCubes = 6;
 
 var numVertices  = 36*numCubes;
 var pointsArray = [];
 var normalsArray = [];
+var texCoordsArray = [];
+var colorsArray = [];
+
+var texSize = 256;
+var numChecks = 16;
+
+var texture1, texture2;
+var t1, t2;
+
+var dir = 0;
+
+var vertexColors = [
+    vec4( 0.0, 0.0, 0.0, 1.0 ),  // black
+    vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
+    vec4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
+    vec4( 0.0, 1.0, 0.0, 1.0 ),  // green
+    vec4( 0.0, 0.0, 1.0, 1.0 ),  // blue
+    vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
+    vec4( 0.0, 1.0, 1.0, 1.0 ),  // white
+    vec4( 0.0, 1.0, 1.0, 1.0 )   // cyan
+];  
+
+var texCoord = [
+    vec2(0, 0),
+    vec2(0, 1),
+    vec2(1, 1),
+    vec2(1, 0)
+];
+
+var image1 = new Uint8Array(4*texSize*texSize);
+
+    for ( var i = 0; i < texSize; i++ ) {
+        for ( var j = 0; j <texSize; j++ ) {
+            var patchx = Math.floor(i/(texSize/numChecks));
+            if(patchx%2) c = 255;
+            else c = 0;
+            image1[4*i*texSize+4*j] = c;
+            image1[4*i*texSize+4*j+1] = c;
+            image1[4*i*texSize+4*j+2] = c;
+            image1[4*i*texSize+4*j+3] = 255;
+        }
+    }
+    
+var image2 = new Uint8Array(4*texSize*texSize);
+
+    // Create a checkerboard pattern
+    for ( var i = 0; i < texSize; i++ ) {
+        for ( var j = 0; j <texSize; j++ ) {
+            var patchy = Math.floor(j/(texSize/numChecks));
+            if(patchy%2) c = 255;
+            else c = 0;
+            image2[4*i*texSize+4*j] = c;
+            image2[4*i*texSize+4*j+1] = c;
+            image2[4*i*texSize+4*j+2] = c;
+            image2[4*i*texSize+4*j+3] = 255;
+           }
+    }
 	
 
 
-var lightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
+var lightPosition = vec4(-1.0, -1.0, -1.0, 1.0 );
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
 var lightDiffuse = vec4( 1.0, 1.0, 1.0, 1.0 );
 var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
 
-var materialAmbient = vec4( 1.0, 0.0, 1.0, 1.0 );
+var materialAmbient = vec4( 0.0, 0.0, 0.0, 0.0 );
 var materialDiffuse = vec4( 1.0, 0.8, 0.0, 1.0);
 var materialSpecular = vec4( 1.0, 0.8, 0.0, 1.0 );
 var materialShininess = 100.0;
@@ -36,6 +91,26 @@ var thetaLoc;
 
 var flag = true;
 
+function configureTexture() {
+    texture1 = gl.createTexture();       
+    gl.bindTexture( gl.TEXTURE_2D, texture1 );
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, texSize, texSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, image1);
+    gl.generateMipmap( gl.TEXTURE_2D );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, 
+                      gl.NEAREST_MIPMAP_LINEAR );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    texture2 = gl.createTexture();
+    gl.bindTexture( gl.TEXTURE_2D, texture2 );
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, texSize, texSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, image2);
+    gl.generateMipmap( gl.TEXTURE_2D );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, 
+                      gl.NEAREST_MIPMAP_LINEAR );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+}
+
 function quad(a, b, c, d) {
 
 	for(var i = 0; i < numCubes; i++){
@@ -46,29 +121,45 @@ function quad(a, b, c, d) {
 	 
 		pointsArray.push(positionArray[8*i+a]); 
 		normalsArray.push(normal); 
+		colorsArray.push(vertexColors[a]); 	 
+		texCoordsArray.push(texCoord[0]);
+
 		pointsArray.push(positionArray[8*i+b]); 
+		colorsArray.push(vertexColors[a]);
 		normalsArray.push(normal); 
+		texCoordsArray.push(texCoord[1]); 
+
 		pointsArray.push(positionArray[8*i+c]); 
-		normalsArray.push(normal);   
+		normalsArray.push(normal);  
+		colorsArray.push(vertexColors[a]);
+		texCoordsArray.push(texCoord[2]); 	
+		
 		pointsArray.push(positionArray[8*i+a]);  
 		normalsArray.push(normal); 
+		colorsArray.push(vertexColors[a]);	
+		texCoordsArray.push(texCoord[0]); 
+		
 		pointsArray.push(positionArray[8*i+c]); 
 		normalsArray.push(normal); 
+		colorsArray.push(vertexColors[a]);
+		texCoordsArray.push(texCoord[2]); 
+		
 		pointsArray.push(positionArray[8*i+d]); 
-		normalsArray.push(normal);    
+		normalsArray.push(normal);   
+		colorsArray.push(vertexColors[a]);	
+		texCoordsArray.push(texCoord[3]);    		
 	}
 }
-
 var positionArray = [];
 
 var translation = [
-        vec4( 0.5,0,0, 0),
-        vec4( -0.5,0,0, 0 ),
-        vec4( 0.1,  0.1,  0.1, 1.0 ),
-        vec4( 0.1, -0.1,  0.1, 1.0 ),
-        vec4( -0.1, -0.1, -0.1, 1.0 ),
-        vec4( -0.1,  0.1, -0.1, 1.0 ),
-        vec4( 0.1,  0.1, -0.1, 1.0 ),
+        vec4( 0.5,0,0, -0.5),
+        vec4( -0.5,0,0, -0.5 ),
+        vec4( 0,  0.5,  0, -0.5 ),
+        vec4( 0, -0.5,  0, -0.5 ),
+        vec4( 0, -0, 0.5, -0.5 ),
+        vec4( 0,  0, -0.5, -0.5 ),
+        vec4( 0,  0, 0, -0.5 ),
         vec4( 0.1, -0.1, -0.1, 1.0 )
     ];
 
@@ -138,12 +229,30 @@ window.onload = function init() {
     var vPosition = gl.getAttribLocation(program, "vPosition");
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
+	
+		//uncomment these lines for a multi color object!
+	
+	var cBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
+    
+    var vColor = gl.getAttribLocation( program, "vColor" );
+    gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vColor );
+	
+		var tBuffer = gl.createBuffer();
+    gl.bindBuffer( gl.ARRAY_BUFFER, tBuffer);
+    gl.bufferData( gl.ARRAY_BUFFER, flatten(texCoordsArray), gl.STATIC_DRAW );
+    
+    var vTexCoord = gl.getAttribLocation( program, "vTexCoord" );
+    gl.vertexAttribPointer( vTexCoord, 2, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray( vTexCoord );
 
     thetaLoc = gl.getUniformLocation(program, "theta"); 
     
     viewerPos = vec3(0.0, 0.0, -20.0 );
 
-    projection = ortho(-1, 1, -1, 1, -100, 100);
+    projection = ortho(-2, 2, -2, 2, -100, 100);
     
     ambientProduct = mult(lightAmbient, materialAmbient);
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
@@ -168,6 +277,16 @@ window.onload = function init() {
     
     gl.uniformMatrix4fv( gl.getUniformLocation(program, "projectionMatrix"),
        false, flatten(projection));
+	   
+		configureTexture();
+    
+    gl.activeTexture( gl.TEXTURE0 );
+    gl.bindTexture( gl.TEXTURE_2D, texture1 );
+    gl.uniform1i(gl.getUniformLocation( program, "Tex0"), 0);
+            
+    gl.activeTexture( gl.TEXTURE1 );
+    gl.bindTexture( gl.TEXTURE_2D, texture2 );
+    gl.uniform1i(gl.getUniformLocation( program, "Tex1"), 1);
     
     render();
 }

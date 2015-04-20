@@ -214,6 +214,12 @@ function god(){
 	//render();
 }
 
+function devil(){
+	currentCubes--;
+	if(currentCubes < 0){
+		currentCubes = 0;
+	}
+}
 
 window.onload = function init() {
     canvas = document.getElementById( "gl-canvas" );
@@ -232,7 +238,7 @@ window.onload = function init() {
     program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-	makeCubes();
+		makeCubes();
     //addCube();
     colorCube();
 
@@ -283,8 +289,10 @@ window.onload = function init() {
     document.getElementById("ButtonY").onclick = function(){axis = yAxis;};
     document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
     document.getElementById("ButtonT").onclick = function(){god();};
-	
-	    thetaLoc = gl.getUniformLocation(program, "theta");
+		document.getElementById("ButtonU").onclick = function(){devil();};
+
+
+	  thetaLoc = gl.getUniformLocation(program, "theta");
 
 	gl.uniform4fv(gl.getUniformLocation(program, "ambientProduct"),
 	   flatten(ambientProduct));

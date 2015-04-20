@@ -92,6 +92,8 @@ var thetaLoc;
 
 var flag = true;
 
+var p = 2;
+
 function configureTexture() {
     texture1 = gl.createTexture();       
     gl.bindTexture( gl.TEXTURE_2D, texture1 );
@@ -281,7 +283,7 @@ window.onload = function init() {
     
     viewerPos = vec3(0.0, 0.0, -20.0 );
 
-    projection = ortho(-2, 2, -2, 2, -100, 100);
+    projection = ortho(-p, p, -p, p, -100, 100);
     
     ambientProduct = mult(lightAmbient, materialAmbient);
     diffuseProduct = mult(lightDiffuse, materialDiffuse);
@@ -292,7 +294,9 @@ window.onload = function init() {
     document.getElementById("ButtonZ").onclick = function(){axis = zAxis;};
     document.getElementById("ButtonT").onclick = function(){god();};
 		document.getElementById("ButtonU").onclick = function(){devil();};
-
+		document.getElementById("ZoomIn").onclick = function(){p = p / 2;}
+		document.getElementById("ZoomOut").onclick = function(){p = p * 2;}
+		document.getElementById("Default").onclick = function(){p = 2;}
 
 	  thetaLoc = gl.getUniformLocation(program, "theta");
 
